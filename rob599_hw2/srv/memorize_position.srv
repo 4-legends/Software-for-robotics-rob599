@@ -1,0 +1,6 @@
+
+string name #Name of the location 
+
+---
+
+bool Status #Execution Status

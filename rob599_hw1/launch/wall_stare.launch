@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    	<rosparam command="load" file="$(find rob599_hw1)/config/params.yaml"/>
+  	<node pkg="rob599_hw1" name="control" type="control.py" output="screen">
+  		<remap from="/base_scan" to="/laser_scan"/>
+  		</node>
+
+  	<node pkg="rob599_hw1" name="filter" type="filter.py" output="screen"/>
+	<node pkg="rob599_hw1" name="line_fit" type="line_fitting.py" output="screen"/>
+  	<!-- <node pkg="rob599_hw1" name="stopping_distance_control_server" type="stopping_distance_control_server.py" output="screen"/> -->
+
+	</launch>

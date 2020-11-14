@@ -1,0 +1,6 @@
+
+float64 stop_dist #Stopping Distance 
+
+---
+
+bool Status #Execution Status

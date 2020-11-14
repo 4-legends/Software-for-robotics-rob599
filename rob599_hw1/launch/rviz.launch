@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <rosparam command="load" file="$(find rob599_hw1)/config/params.yaml"/>
+  	<node pkg="rviz" type="rviz" name="rviz_hw1" args="-d $(find rob599_hw1)/config/hw1.rviz" output="screen"/>
+
+</launch>
