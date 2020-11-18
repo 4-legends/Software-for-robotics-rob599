@@ -1,104 +1,129 @@
 #!/usr/bin/env python
 
 import rospy
-import numpy as np
+import os
 import csv 
-import tf
 import actionlib
-from rob599_hw2.srv import memorize_position, memorize_positionResponse
-from nav_msgs.msg import Odometry
+from rob599_hw2.srv import memorize_position, file_position
+from sensor_msgs.msg import Image
 from rob599_hw2.msg import control_robotAction, control_robotGoal, control_robotFeedback, control_robotResult
-from visualization_msgs.msg import Marker
-from geometry_msgs.msg import PoseStamped
-from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback,MoveBaseActionResult
-#from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from rob599_hw2.msg import patrolAction, patrolGoal, patrolResult, patrolFeedback
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+import rosbag
 
 
 class Robot_controller:
     def __init__(self):
-        
-        self.tf_listener = tf.TransformListener()
-        self.odom_msg = np.zeros([2,4])
-        self.goal_pose = MoveBaseActionGoal()
-        self.frame_id = ''
         self.known_location = {}
-        self.goal = 1
-        self.feedback = 0
-        self.result = False
-        Distance = rospy.Service('memorize_position', memorize_position, self.memorize_position_func)
-        self.csv_writer = open('/home/graspinglab/catkin_ws/src/rob599_hw2/config/known_location.txt', 'w+')
-        self.csv_writer.write('Name, Frame_id, Child_frame_id, [Pose[x,y,z], Orientation[x,y,z,w]]\n')
-        # self.marker_pub = marker_pub = rospy.Publisher('shortest_distance',Marker, queue_size=1)
-        # self.line_marker_pub = marker_pub = rospy.Publisher('shortest_distance_line',Marker, queue_size=1)
-        self.goal_pub = rospy.Publisher('move_base/goal',MoveBaseActionGoal, queue_size=1)
+        self.current_img = Image()
+        self.heading = PoseWithCovarianceStamped()
+        self.filepath = os.path.dirname(os.path.realpath(__file__))
+        Current_loc = rospy.Service('memorize_position', memorize_position, self.memorize_position_func)
+        file = rospy.Service('file_position', file_position, self.file_position_func)
         self.server = actionlib.SimpleActionServer('control_robot', control_robotAction, self.action_callback, False)
+        self.patrol_server = actionlib.SimpleActionServer('patrol', patrolAction, self.patrol_action_callback, False)
         self.server.start()
-        self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
-        self.status_sub = rospy.Subscriber('move_base/feedback', MoveBaseActionFeedback, self.status_callback)
-        self.result_sub = rospy.Subscriber('move_base/result', MoveBaseActionResult, self.result_callback)
-         
-	
+        self.patrol_server.start()
+        self.pose_sub = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.pose_callback)
+        self.image_sub = rospy.Subscriber('/head_camera/rgb/image_raw', Image, self.image_callback)
+        
 
     def memorize_position_func(self, req):
-        self.known_location[req.name] = self.goal_pose
-        self.csv_writer.write("{}, {}, {}, {}, {}, {}, {}, {}, {}\n".format(req.name, self.frame_id, self.odom_msg[0,0], self.odom_msg[0,1], self.odom_msg[0,2], self.odom_msg[1,0], self.odom_msg[1,1], self.odom_msg[1,2], self.odom_msg[1,3]))
+        self.known_location[req.name] = self.heading
         return True
 
 
-    def odom_callback(self, msg):
-        goal_pose_msg = PoseStamped()
-        goal_pose_msg.header.stamp = rospy.Time(0)
-        goal_pose_msg.header.frame_id = msg.header.frame_id
-        goal_pose_msg.pose.position.x = msg.pose.pose.position.x
-        goal_pose_msg.pose.position.y = msg.pose.pose.position.y
-        goal_pose_msg.pose.position.z = msg.pose.pose.position.z
-        goal_pose_msg.pose.orientation.x = msg.pose.pose.orientation.x
-        goal_pose_msg.pose.orientation.y = msg.pose.pose.orientation.y
-        goal_pose_msg.pose.orientation.z = msg.pose.pose.orientation.z
-        goal_pose_msg.pose.orientation.w = msg.pose.pose.orientation.w
-        self.tf_listener.waitForTransform("/map", msg.header.frame_id, goal_pose_msg.header.stamp, rospy.Duration(0.5))
-        goal_pose_local = self.tf_listener.transformPose("/map", goal_pose_msg)
-        self.frame_id = goal_pose_local.header.frame_id
-        self.odom_msg[0,0] = goal_pose_local.pose.position.x
-        self.odom_msg[0,1] = goal_pose_local.pose.position.y
-        self.odom_msg[0,2] = goal_pose_local.pose.position.z
-        self.odom_msg[1,0] = goal_pose_local.pose.orientation.x
-        self.odom_msg[1,1] = goal_pose_local.pose.orientation.y
-        self.odom_msg[1,2] = goal_pose_local.pose.orientation.z
-        self.odom_msg[1,2] = goal_pose_local.pose.orientation.w
-        self.goal_pose.header = goal_pose_local.header
-        self.goal_pose.goal.target_pose = goal_pose_local
-        print(self.goal_pose)
+    def file_position_func(self, req):
+        if req.name == 'save':
+            with open(self.filepath+'/location/known_location.txt', 'a') as self.csv_writer:
+                for key, value in enumerate(self.known_location):
+                    goal = self.known_location[value]
+                    self.csv_writer.write("{}, {}, {}, {}, {}, {}, {}, {}, {}\n".format(value, goal.header.frame_id, goal.pose.pose.position.x, goal.pose.pose.position.y, goal.pose.pose.position.z, goal.pose.pose.orientation.x, goal.pose.pose.orientation.y, goal.pose.pose.orientation.z, goal.pose.pose.orientation.w))
+        elif req.name == 'load':
+            data = []
+            with open(self.filepath+'/location/known_location.txt') as csvfile:
+                checker=csvfile.readline()
+                if ',' in checker:
+                    delim=','
+                else:
+                    delim=' '
+                reader = csv.reader(csvfile, delimiter=delim)
+                for i in reader:
+                    if i[0] != 'Name':
+                        to_save = PoseWithCovarianceStamped()
+                        name = i[0]
+                        to_save.header.frame_id = 'map'
+                        to_save.pose.pose.position.x = float(i[2])
+                        to_save.pose.pose.position.y = float(i[3])
+                        to_save.pose.pose.position.z = float(i[4])
+                        to_save.pose.pose.orientation.x = float(i[5])
+                        to_save.pose.pose.orientation.y = float(i[6])
+                        to_save.pose.pose.orientation.z = float(i[7])
+                        to_save.pose.pose.orientation.w = float(i[8])
+                        self.known_location[name] = to_save
+        else:
+            rospy.logerr('Invalid Service Call')
+
+        return True
 
 
-    def status_callback(self, msg):
-        self.feedback = msg
-
-    def result_callback(self, msg):
-        self.result = True
+    def image_callback(self, msg):
+        self.current_img = msg
 
 
-    def action_callback(self, goal):
+    def pose_callback(self, msg):
+        self.heading = msg
+
+
+    def feedback_callback(self, feedback):
+        self.server.publish_feedback(control_robotFeedback(progress='In Progresss'))
+
+
+    def active_callback(self):
+        rospy.loginfo('Action is active')   
+
+
+    def action_callback(self, goal_name):
         rospy.loginfo('Control Robot Action Server Started')
-        
-        try: 
-            goal = self.known_location[goal.name] 
+        try:
+            goal_og = self.known_location[goal_name.name]
         except:
             rospy.logerr("Invalid name entered")
             return None
-        self.goal_pose.goal_id = self.goal
-        self.goal += 1
-        while not self.result:
-            self.server.publish_feedback(control_robotFeedback(progress=self.feedback))
-
-            if self.server.is_new_goal_available():
-                result = 0
-                self.server.set_preempted(control_robotResult(status=result))
-                return
-        self.result = False
+        client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        client.wait_for_server()
+        rospy.loginfo('Made contact with move_base server')
+        goal = MoveBaseGoal()
+        goal.target_pose.header = goal_og.header
+        goal.target_pose.pose = goal_og.pose.pose
+        client.send_goal(goal, active_cb=self.active_callback, feedback_cb=self.feedback_callback)
+        client.wait_for_result()
         result = 1
         self.server.set_succeeded(control_robotResult(status=result))
-        rospy.loginfo("Control Robot Action Completed") 
+        rospy.loginfo("Control Robot Action Completed")  
+
+
+    def patrol_action_callback(self, something):
+        rospy.loginfo('Patrol Action Server Started')
+        bag = rosbag.Bag(self.filepath+'/Bag/Extra_credit.bag', 'w')
+        client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        client.wait_for_server()
+        rospy.loginfo('Made contact with move_base server')
+        for key, value in enumerate(self.known_location):
+            goal_og = self.known_location[value]
+            goal = MoveBaseGoal()
+            goal.target_pose.header.frame_id = goal_og.header.frame_id
+            goal.target_pose.pose = goal_og.pose.pose
+            client.send_goal(goal, active_cb=self.active_callback, feedback_cb=self.feedback_callback)
+            client.wait_for_result()
+            bag.write('extra_credit',self.current_img)
+        result = 1
+        self.patrol_server.set_succeeded(patrolResult(status=result))
+        rospy.loginfo("Patrol Action Completed")
+        bag.close()
+
+
 
 if __name__ == '__main__':
     rospy.init_node('control', anonymous=True)

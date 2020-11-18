@@ -62,6 +62,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
    FILES
    memorize_position.srv
+   file_position.srv
 #   Service1.srv
 #   Service2.srv
 )

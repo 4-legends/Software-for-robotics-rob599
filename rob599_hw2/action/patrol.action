@@ -5,4 +5,4 @@
 bool status
 ---
 # feedback
-float64 progress
+string progress
