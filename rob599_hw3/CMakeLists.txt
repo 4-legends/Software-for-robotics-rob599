@@ -203,5 +203,28 @@ include_directories(
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
+add_executable(median_filter
+  src/median_filter.cpp
+)
+
+target_link_libraries(median_filter
+  ${catkin_LIBRARIES}
+)
+
+add_executable(noiser
+  src/noiser.cpp
+)
+
+target_link_libraries(noiser
+  ${catkin_LIBRARIES}
+)
+
+add_executable(timer
+  src/noiser.cpp
+)
+
+target_link_libraries(timer
+  ${catkin_LIBRARIES}
+)
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

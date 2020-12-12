@@ -21,7 +21,11 @@ class Timer:
         self.counter = 0
         self.print = 0
         self.filepath = argv[0]
-        self.filepath = self.filepath.replace('scripts/timer.py', 'config/')
+        if self.filepath.find('scripts/timer.py') != -1:
+            self.filepath = self.filepath.replace('scripts/timer.py', 'config/')
+        elif self.filepath.find('config') != -1:
+            self.filepath = self.filepath.replace('/rob599_hw3', '/rob599_hw3/config/')
+            self.filepath = self.filepath.replace('//', '/')
         if rospy.get_param('node_num') == 1:
             self.node = "Timer node to Timer node"
         elif rospy.get_param('node_num') == 2:

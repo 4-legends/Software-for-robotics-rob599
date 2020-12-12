@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    	<rosparam command="load" file="$(find rob599_hw3)/config/params2.yaml"/>
+  	<node pkg="rob599_hw3" name="timer" type="timer" output="screen" args ="$(find trial_hw3)/config/">
+  		</node>
+
+  	<node pkg="rob599_hw3" name="median_filter" type="median_filter" output="screen">
+  	    <remap from="/base_scan" to="/timer_start"/>
+  	    <remap from="/laser_scan" to="/node_time_taken"/>
+  	</node>
+	</launch>
