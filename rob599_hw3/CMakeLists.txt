@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  roslib
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rob599_hw3
-#  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs
+   CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs roslib
 #  DEPENDS system_lib
 )
 
@@ -220,7 +221,7 @@ target_link_libraries(noiser
 )
 
 add_executable(timer
-  src/noiser.cpp
+  src/timer.cpp
 )
 
 target_link_libraries(timer

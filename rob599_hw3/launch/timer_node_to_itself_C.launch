@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     	<rosparam command="load" file="$(find rob599_hw3)/config/params1.yaml"/>
-  	<node pkg="rob599_hw3" name="timer" type="timer" output="screen" args= "$(find trial_hw3)/config/">
+  	<node pkg="rob599_hw3" name="timer" type="timer" output="screen" args= "$(find rob599_hw3)/config/">
   		<remap from="/timer_start" to="/node_time_taken"/>
   		</node>
 	</launch>
