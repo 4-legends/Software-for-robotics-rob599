@@ -1,9 +1,12 @@
 Pair Programming Partners: Paresh Soni and Parthasarathy Bana
 
-Scripts folder contains Python scripts.\\
-src folder contains C++ scripts.\\
-Config folder contains params*.yaml, time.txt.\\
-launch folder contains all the launch files.\\
+Scripts folder contains Python scripts.
+
+src folder contains C++ scripts.
+
+Config folder contains params*.yaml, time.txt. 
+
+launch folder contains all the launch files. 
 
 To run python timer to timer:
 $ roslaunch rob599_hw3 timer_node_to_itself.launch
