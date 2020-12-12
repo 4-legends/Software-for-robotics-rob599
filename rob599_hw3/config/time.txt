@@ -1,0 +1,6 @@
+
+Python: Time taken by Timer node to Timer node is 0.0002739429473876953 secs
+
+Python: Time taken by Timer node to Median node to Timer node is 0.033190250396728516 secs
+
+Python: Time taken by Timer node to Median node to Noiser node to Timer node is 0.03654074668884277 secs

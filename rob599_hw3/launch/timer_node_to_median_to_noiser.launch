@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+    	<rosparam command="load" file="$(find rob599_hw3)/config/params3.yaml"/>
+  	<node pkg="rob599_hw3" name="timer" type="timer.py" output="screen" args ="$(find trial_hw3)/config/">
+  		</node>
+
+  	<node pkg="rob599_hw3" name="median_filter" type="median_filter.py" output="screen">
+  	    <remap from="/base_scan" to="/timer_start"/>
+  	</node>
+  	
+	<node pkg="rob599_hw3" name="noiser" type="noiser.py" output="screen">
+  	    <remap from="/base_scan" to="/laser_scan"/>
+  	    <remap from="/gaus_err_laser_scan" to="/node_time_taken"/>
+  	</node>
+	</launch>

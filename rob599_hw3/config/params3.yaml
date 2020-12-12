@@ -1,0 +1,5 @@
+
+#Hw 3 Params
+laser_noise_variance  : 0.5
+median_filter_size    : 2
+node_num              : 3
