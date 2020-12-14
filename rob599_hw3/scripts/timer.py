@@ -19,7 +19,7 @@ class Timer:
         self.laser_sub = rospy.Subscriber('/node_time_taken', LaserScan, self.time_callback)
         self.scan_pub = rospy.Publisher('/timer_start', LaserScan, queue_size= 1)
         self.counter = 0
-        self.print = 0
+        self.print_ct = 0
         self.average_time = 0
         self.complete = 0
         self.filepath = argv[0]
@@ -37,14 +37,14 @@ class Timer:
 
 
     def time_callback(self, msg):
-        self.average_time += self.node, time.time() - self.counter
+        self.average_time += time.time() - self.counter
         self.complete = 0
         print('Python: Time taken by {0} is {1} secs'.format(self.node, time.time() - self.counter))
-        self.print  += 1
-        if self.print == 100:
-            print('Python: Time taken by {0} for 100 times is {1} secs'.format(self,average_time/100))
+        self.print_ct  += 1
+        if self.print_ct == 100:
+            print('Python: Time taken by {0} for 100 times is {1} secs'.format(self.node, self.average_time/100))
             with open(self.filepath+'time.txt', 'a') as self.csv_writer:
-                self.csv_writer.write('\nPython: Time taken by {0} for 100 times is {1} secs\n'.format(self,average_time/100))
+                self.csv_writer.write('\nPython: Time taken by {0} for 100 times is {1} secs\n'.format(self.node, self.average_time/100))
 
 
     def laser_callback(self, msg):

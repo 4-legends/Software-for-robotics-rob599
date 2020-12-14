@@ -3,6 +3,6 @@
     	<rosparam command="load" file="$(find rob599_hw3)/config/params1.yaml"/>
   	<node pkg="rob599_hw3" name="timer" type="timer.py" output="screen">
   		<remap from="/timer_start" to="/node_time_taken"/>
-  		<arg name = "filepath" value ="$(find rob599_hw3)/config/"/>
+  		<!-- <arg name = "filepath" value ="$(find rob599_hw3)/config/"/> -->
   		</node>
 	</launch>

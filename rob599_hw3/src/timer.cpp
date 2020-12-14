@@ -47,7 +47,7 @@ void Timer::laser_Callback(const sensor_msgs::LaserScan::ConstPtr& msg)
 
 void Timer::time_Callback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
-  complete = 0
+  complete = 0;
   average_time = average_time + (ros::Time::now().toSec() - secs);
   print = print + 1;
   ROS_INFO("C++: Time taken by nodes is %f", (ros::Time::now().toSec() - secs));

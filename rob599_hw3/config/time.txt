@@ -12,3 +12,16 @@ C++: Time taken by Timer node to Timer node is 0
 C++: Time taken by Timer node to Median node to Timer node is 0
 
 C++: Time taken by Timer node to Median node to Noiser node to Timer node is 0.001
+
+
+Python: Time taken by Timer node to Timer node for 100 times is 0.00355247497559 secs
+
+C++: Time taken by nodes for 100 steps is 0
+
+Python: Time taken by Timer node to Median node to Timer node for 100 times is 0.0203294086456 secs
+
+C++: Time taken by nodes for 100 steps is 0.0016
+
+Python: Time taken by Timer node to Median node to Noiser node to Timer node for 100 times is 0.0219888043404 secs
+
+C++: Time taken by nodes for 100 steps is 0.00099
