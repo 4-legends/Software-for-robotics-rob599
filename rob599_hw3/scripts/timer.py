@@ -20,6 +20,8 @@ class Timer:
         self.scan_pub = rospy.Publisher('/timer_start', LaserScan, queue_size= 1)
         self.counter = 0
         self.print = 0
+        self.average_time = 0
+        self.complete = 0
         self.filepath = argv[0]
         if self.filepath.find('scripts/timer.py') != -1:
             self.filepath = self.filepath.replace('scripts/timer.py', 'config/')
@@ -35,16 +37,21 @@ class Timer:
 
 
     def time_callback(self, msg):
+        self.average_time += self.node, time.time() - self.counter
+        self.complete = 0
         print('Python: Time taken by {0} is {1} secs'.format(self.node, time.time() - self.counter))
-        if self.print == 0:
-            self.print  = 1
+        self.print  += 1
+        if self.print == 100:
+            print('Python: Time taken by {0} for 100 times is {1} secs'.format(self,average_time/100))
             with open(self.filepath+'time.txt', 'a') as self.csv_writer:
-                self.csv_writer.write('\nPython: Time taken by {0} is {1} secs\n'.format(self.node, time.time() - self.counter))
+                self.csv_writer.write('\nPython: Time taken by {0} for 100 times is {1} secs\n'.format(self,average_time/100))
 
 
     def laser_callback(self, msg):
         self.scan_pub.publish(msg)
-        self.counter = time.time()
+        if self.complete == 0:
+            self.counter = time.time()
+            self.complete = 1
 
 
 if __name__ == '__main__':

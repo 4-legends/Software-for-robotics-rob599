@@ -13,6 +13,8 @@ class Timer
 {
   public:
     double secs;
+    int complete;
+    double average_time;
     std::string filepath;
     int print = 0;
     ros::NodeHandle n;
@@ -37,18 +39,24 @@ void Timer::laser_Callback(const sensor_msgs::LaserScan::ConstPtr& msg)
   filtered_scan.range_max = msg->range_max;
   filtered_scan.ranges = msg -> ranges;
   timer_pub.publish(filtered_scan);
+  if (complete ==0){
+  complete = 1;
   secs =ros::Time::now().toSec();
+  }
   }
 
 void Timer::time_Callback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
-  ROS_INFO("C++: Time taken by nodes is %f", (ros::Time::now().toSec() - secs));
+  complete = 0
+  average_time = average_time + (ros::Time::now().toSec() - secs);
   print = print + 1;
-  if(print == 10)
+  ROS_INFO("C++: Time taken by nodes is %f", (ros::Time::now().toSec() - secs));
+  if(print == 100)
   {
+    ROS_INFO("C++: Time taken by nodes for 100 steps is %f", average_time/100);
     std::ofstream outfile;
     outfile.open(filepath, std::ios_base::app);
-    outfile << "\nC++: Time taken by nodes is " << (ros::Time::now().toSec() - secs) << "\n";
+    outfile << "\nC++: Time taken by nodes for 100 ste is " << (average_time/100) << "\n";
   }
   }
 
@@ -62,6 +70,8 @@ int main(int argc, char **argv)
   Timer timer;
   path.replace(path.find(str1), str1.length(), str2);
   timer.filepath = path;
+  timer.complete = 0;
+  timer.average_time = 0;
   ros::Subscriber sub = n.subscribe<sensor_msgs::LaserScan>("/base_scan", 1000, &Timer::laser_Callback, &timer);
   ros::Subscriber sub1 = n.subscribe<sensor_msgs::LaserScan>("/node_time_taken", 1000, &Timer::time_Callback, &timer);
   ros::spin();
